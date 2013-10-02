@@ -47,6 +47,9 @@ codeFix_log <- subset(codeFix_log, subset = (!(CUSTCD == "WOSMUS") | (is.na(CUST
 	#codeFix_log <- subset(codeFix_log, subset = ( !is.na(Referer) & (!(CUSTCD == "WOSMUS") | (is.na(CUSTCD))) ), select = -CUSTCD)
 detailTab_log <- subset(detailTab_log, subset = (!(CUSTCD == "WOSMUS") | (is.na(CUSTCD))), select = -CUSTCD)
 
+# Normalizing keywords by stemming, currently only stemming plurals e.g. words that end with `s`
+search_log$Q <- gsub("(.+[^s])s$", "\\1", search_log$Q)
+
 ### summarize total keyword searches - search_log[1:100,]
 total_keyword_search <- ddply(search_log, .(Q), summarise, 
                               sum_link = sum(Status=='Link'), 

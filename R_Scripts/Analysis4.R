@@ -27,7 +27,7 @@ keyword_search_counts_anl_4 <- keyword_search_counts_anl_4[order(-keyword_search
                                                                  keyword_search_counts_anl_4$Q, 
                                                                  -keyword_search_counts_anl_4$LinkCtg),  ]
 
-write.csv(keyword_search_counts_anl_4, file = "keyword_analysis_4_new.csv", na = '', row.names = FALSE)
+write.csv(keyword_search_counts_anl_4, file = "4_keyword_category.csv", na = '', row.names = FALSE)
 
 runTime <- Sys.time()-begTime 
 

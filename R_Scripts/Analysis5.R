@@ -36,7 +36,7 @@ search_log_cat_anl <- search_log_cat_sum[order(-search_log_cat_sum$total_LinkCtg
 search_log_cat_anl$sort_order = 1:nrow(search_log_cat_anl)
 
 #Export results to csv file
-write.csv(search_log_cat_anl, file = "keyword_analysis_5_new.csv", na = '', row.names = FALSE)
+write.csv(search_log_cat_anl, file = "5_keyword_resultsset_category.csv", na = '', row.names = FALSE)
 
 runTime <- Sys.time()-begTime 
 

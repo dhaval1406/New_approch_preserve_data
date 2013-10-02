@@ -12,9 +12,9 @@ require(plyr)
 setwd("P:/Data_Analysis/Weblog_Data/")
 
 #Importing data
-search_log <- read.delim('search_log_20130601_20130701.txt', header = TRUE, sep = "\t", quote = "", comment.char = "", na.strings=c("NA", ''))
-codeFix_log <- read.delim('codefix_log_20130601_20130701.txt', header = TRUE, sep = "\t", quote = "", comment.char = "", na.strings=c("NA", ''))
-detailTab_log <- read.delim('detailtab_log_20130601_20130701.txt', header = TRUE, sep = "\t", quote = "", comment.char = "", na.strings=c("NA", ''))
+search_log <- read.delim('search_log_20130712_20130719.txt', header = TRUE, sep = "\t", quote = "", comment.char = "", na.strings=c("NA", '')) 
+codeFix_log <- read.delim('codefix_log_20130712_20130719.txt', header = TRUE, sep = "\t", quote = "", comment.char = "", na.strings=c("NA", ''))
+detailTab_log <- read.delim('detailtab_log_20130712_20130719.txt', header = TRUE, sep = "\t", quote = "", comment.char = "", na.strings=c("NA", ''))
 category <- read.csv('category.csv', header = FALSE, sep = ",", quote = "\"", comment.char = "", na.strings=c("NA", ''))
 
 #clean up data
@@ -37,6 +37,9 @@ codeFix_log <- subset(codeFix_log, subset = (!(CUSTCD == "WOSMUS") | (is.na(CUST
 	# For analysis # 3, non blank Referer is used
 	#codeFix_log <- subset(codeFix_log, subset = ( !is.na(Referer) & (!(CUSTCD == "WOSMUS") | (is.na(CUSTCD))) ), select = -CUSTCD)
 detailTab_log <- subset(detailTab_log, subset = (!(CUSTCD == "WOSMUS") | (is.na(CUSTCD))), select = -CUSTCD)
+
+# Normalizing keywords by stemming, currently only stemming plurals e.g. words that end with `s`
+search_log$Q <- gsub("(.+[^s])s$", "\\1", search_log$Q)
 
 ### summarize total keyword searches - search_log[1:100,]
 total_keyword_search <- ddply(search_log, .(Q), summarise, 

@@ -59,7 +59,7 @@ keyword_search_counts <- ddply(search_codefix_detailtab_merge, .(Q, SERIES_CODE,
                               )
 
 # Exporting results in csv
-write.csv(keyword_search_counts, file = "keyword_analysis_2_week.csv", na = '', row.names = FALSE)
+write.csv(keyword_search_counts, file = "2_keyword_webid.csv", na = '', row.names = FALSE)
 
 runTime <- Sys.time()-begTime 
 runTime

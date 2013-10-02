@@ -147,7 +147,7 @@ keyword_search_counts_anl_dt = url_parts_merge_dt[, `:=` (LinkCtg = sum(LinkCtg)
 # Reset the key to get the correct value for unique records
 keyword_search_counts_anl_dt = unique(setkey(keyword_search_counts_anl_dt, NULL))
 
-write.csv(keyword_search_counts_anl_dt, file = "keyword_analysis_8.csv", na = '', row.names = FALSE)
+write.csv(keyword_search_counts_anl_dt, file = "8_keyword_webid_partial.csv", na = '', row.names = FALSE)
 
 runTime <- Sys.time()-begTime 
 runTime;

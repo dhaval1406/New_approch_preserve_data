@@ -42,7 +42,7 @@ keyword_search_counts_anl <- ddply(search_codefix_merge, .(Q, total_search, sum_
 # Sorting based on highest 
 keyword_search_counts_anl <- keyword_search_counts_anl[order(-keyword_search_counts_anl$total_search), ]
 
-write.csv(keyword_search_counts_anl, file = "keyword_analysis_1_new.csv", na = "0", row.names = FALSE)
+write.csv(keyword_search_counts_anl, file = "1_keyword_transition_ratio.csv", na = "0", row.names = FALSE)
 
 runTime <- Sys.time()-begTime 
 runTime
