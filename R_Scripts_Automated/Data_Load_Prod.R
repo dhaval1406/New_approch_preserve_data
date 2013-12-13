@@ -39,7 +39,8 @@ colnames(category) <- c("cat_id_1", "cat_name_1","cat_id_2", "cat_name_2","cat_i
 
 # removing blank series codes and conver  keywords to lower case and 
 # removing internal acccounts with CUSTCD = "WOSMUS"
-search_log <- subset(search_log, subset = ( !is.na(Q) & (!(CUSTCD == "WOSMUS") | (is.na(CUSTCD))) ), select = -CUSTCD )
+# 10/04 - Added SEARCH_TYPE == 1 to keep only "keyword search" and not suggestions
+search_log <- subset(search_log, subset = ( !is.na(Q) & ( !(CUSTCD == "WOSMUS") | (is.na(CUSTCD)) ) & (SEARCH_TYPE == 1) ))
 search_log$Q <- tolower(search_log$Q)
 
 codeFix_log <- subset(codeFix_log, subset = (!(CUSTCD == "WOSMUS") | (is.na(CUSTCD))), select = -CUSTCD)
@@ -85,8 +86,11 @@ format_name <- function(x){
   return(file.name)
 }
 
-# save image of R data for further use
-save.image("P:/Data_Analysis/Processed_R_Datasets/Data_Load_Prod.RData")
+### Save image of R data for further use
+image_file_name <- paste0("P:/Data_Analysis/Processed_R_Datasets/Data_Load_Prod_", 
+                          format(Sys.time(), "%m%d%Y"), ".RData"
+                         )
+save.image(image_file_name)
 
 runTime <- Sys.time()-begTime 
 runTime

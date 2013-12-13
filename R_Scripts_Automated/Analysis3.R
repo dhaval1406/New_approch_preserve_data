@@ -53,8 +53,9 @@ library(data.table)
 
 # Get unique values before merge
 url_parts_search_dt = data.table(url_parts_search)
-codefix_merge_dt = data.table(codefix_merge, key = 'SessionId') [, PRODUCT_CODE:=NULL]
+codefix_merge_dt = data.table(codefix_merge) [, PRODUCT_CODE:=NULL]
 
+codefix_merge_dt <- unique(codefix_merge_dt)
 keyword_search_merge_anl_dt = unique( url_parts_search_dt[, LinkCtg := .N, 
                                                     by=list(Q, SessionId, Link_URL, sum_link, sum_linkCtg, total_search, X6, X7, X8, X9, X10)] [,
                                                                                                                                                 
@@ -63,6 +64,7 @@ keyword_search_merge_anl_dt = unique( url_parts_search_dt[, LinkCtg := .N,
 
 # Setkey for faster join
 setkey(keyword_search_merge_anl_dt, SessionId)
+setkey(codefix_merge_dt, SessionId)
 
 # Partial merge of `codefix_merge_dt` and `keyword_search_merge_anl_dt` - using Link_URL as pattern, and Referer as table
 # Also wrap grep result with `mapply` to apply grep function to each element of each argument

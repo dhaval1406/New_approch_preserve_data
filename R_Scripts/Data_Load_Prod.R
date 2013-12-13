@@ -69,9 +69,11 @@ total_detailtab<- ddply(detailTab_log, .(SessionId, SERIES_CODE), summarise,
 # keyword_search_merge <- merge(search_log, total_keyword_search, all.x=TRUE, by="Q", sort=FALSE)
 # codefix_merge <- merge(codeFix_log, total_codefix, all.x=TRUE, by=c("SessionId", "Referer"), sort=FALSE)
 
-# save image of R data for further use
-save.image("P:/R/New_approch_preserve_data/Data_Load_Prod.RData")
+### Save image of R data for further use
+image_file_name <- paste0("P:/Data_Analysis/Processed_R_Datasets/Data_Load_Prod_", 
+                          format(Sys.time(), "%m%d%Y"), ".RData"
+                         )
+# save.image(image_file_name)
 
 runTime <- Sys.time()-begTime 
-
 runTime

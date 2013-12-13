@@ -26,7 +26,7 @@ URL_parts <- function(x) {
 url_parts_category_id <- URL_parts(as.character(search_log$Link_URL))
 colnames(url_parts_category_id) <- c("CategoryId")
 
-# Append URL part values back to original tabl
+# Append URL part values back to original table
 search_log_cat_id <- data.frame(search_log[c("Q", "Link_URL")], url_parts_category_id)
 
 search_log_cat_sum <- ddply (search_log_cat_id, .(Q, CategoryId), summarise, 
@@ -40,7 +40,7 @@ search_log_cat_anl <- search_log_cat_sum[order(-search_log_cat_sum$total_LinkCtg
 search_log_cat_anl$sort_order = 1:nrow(search_log_cat_anl)
 
 # Format csv name
-analysis_file = format_name("5_keyword_resultsset_category");
+analysis_file = format_name("5_keyword_resultsset_category")
 
 # Exporting results in csv
 write.csv(search_log_cat_anl, file = analysis_file, na = '', row.names = FALSE)

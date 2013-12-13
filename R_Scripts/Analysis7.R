@@ -22,8 +22,8 @@ library(RODBC)
 setwd("P:/Data_Analysis/Weblog_Data/")
 
 #Importing data
-search_log <- read.delim('search_log_20130715_20130722.txt', header = TRUE, sep = "\t", quote = "", comment.char = "", na.strings=c("NA", ''))
-codeFix_log <- read.delim('codefix_log_20130715_20130722.txt', header = TRUE, sep = "\t", quote = "", comment.char = "", na.strings=c("NA", ''))
+search_log <- read.delim('search_log_20131007_20131014.txt', header = TRUE, sep = "\t", quote = "", comment.char = "", na.strings=c("NA", ''))
+codeFix_log <- read.delim('codefix_log_20131007_20131014.txt', header = TRUE, sep = "\t", quote = "", comment.char = "", na.strings=c("NA", ''))
 category <- read.csv('category.csv', header = FALSE, sep = ",", quote = "\"", comment.char = "", na.strings=c("NA", ''))
 
 #clean up data
@@ -139,4 +139,4 @@ analysis_7_results <- analysis_7_results[order( -analysis_7_results$sum_product_
                                                  analysis_7_results$Q, 
                                                  -analysis_7_results$LinkCtg),  ]
 
-write.csv(analysis_7_results, file = "P:/Data_Analysis/Analysis_Results/keyword_analysis_7.csv", na = '', row.names = FALSE)
+# write.csv(analysis_7_results, file = "P:/Data_Analysis/Analysis_Results/keyword_analysis_7.csv", na = '', row.names = FALSE)

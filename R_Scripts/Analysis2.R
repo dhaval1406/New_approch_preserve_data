@@ -58,6 +58,11 @@ keyword_search_counts <- ddply(search_codefix_detailtab_merge, .(Q, SERIES_CODE,
                               links_by_series = sum(link_series) 
                               )
 
+# Sorting the results
+keyword_search_counts <- keyword_search_counts[order(-keyword_search_counts$total_search, 
+                                                     keyword_search_counts$Q, 
+                                                     keyword_search_counts$SERIES_CODE), ]
+
 # Exporting results in csv
 write.csv(keyword_search_counts, file = "2_keyword_webid.csv", na = '', row.names = FALSE)
 

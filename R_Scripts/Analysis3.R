@@ -87,7 +87,7 @@ keyword_search_counts_anl <- keyword_search_counts_anl[order(-keyword_search_cou
                                                               -keyword_search_counts_anl$LinkCtg),  ]
 
 
-write.csv(keyword_search_counts_anl, file = "3_keyword_webid_partnumber.csv", na = '', row.names = FALSE)
+# write.csv(keyword_search_counts_anl, file = "3_keyword_webid_partnumber.csv", na = '', row.names = FALSE)
 
 runTime <- Sys.time()-begTime 
 runTime
