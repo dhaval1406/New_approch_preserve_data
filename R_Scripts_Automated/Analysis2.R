@@ -9,7 +9,9 @@ require(plyr)
 setwd("P:/Data_Analysis/Analysis_Results/")
 
 # Load already processed data
-load("P:/Data_Analysis/Processed_R_Datasets/Data_Load_Prod.RData") 
+image_file_name <- paste0("P:/Data_Analysis/Processed_R_Datasets/Data_Load_Prod_", 
+                          format(Sys.time(), "%m%d%Y"), ".RData")
+load(image_file_name) 
 
 # Trying to capture runtime
 begTime <- Sys.time()

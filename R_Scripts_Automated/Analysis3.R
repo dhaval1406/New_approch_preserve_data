@@ -9,7 +9,9 @@ require(plyr)
 setwd("P:/Data_Analysis/Analysis_Results/")
 
 # Load already processed data
-load("P:/Data_Analysis/Processed_R_Datasets/Data_Load_Prod.RData") 
+image_file_name <- paste0("P:/Data_Analysis/Processed_R_Datasets/Data_Load_Prod_", 
+                          format(Sys.time(), "%m%d%Y"), ".RData")
+load(image_file_name) 
 
 # Trying to capture runtime
 begTime <- Sys.time()
@@ -69,7 +71,7 @@ setkey(codefix_merge_dt, SessionId)
 # Partial merge of `codefix_merge_dt` and `keyword_search_merge_anl_dt` - using Link_URL as pattern, and Referer as table
 # Also wrap grep result with `mapply` to apply grep function to each element of each argument
 # Also transforming/taking substring to match with each category ids, 3, 5, 7, 9, 11
-search_codefix_merge_dt = codefix_merge_dt [ keyword_search_merge_anl_dt, nomatch = 0 ]  [ 
+search_codefix_merge_dt = codefix_merge_dt [ keyword_search_merge_anl_dt, nomatch = 0, allow.cartesian = TRUE ]  [ 
                                              
                                              mapply(grep, Link_URL, Referer)==1 ]  [,
                                              
