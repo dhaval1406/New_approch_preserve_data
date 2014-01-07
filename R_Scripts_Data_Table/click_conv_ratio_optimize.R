@@ -29,9 +29,14 @@ setwd("P:/Data_Analysis/Weblog_Data/")
 # Using keyword_category_121113.xls 
 keyword.cat.data <- as.data.table(read.xlsx("keyword_category_121113.xls", sheetIndex=1, stringsAsFactors= F, encoding='UTF-8'))
 
-# Which files to process  - 1204 to 1211
-search_file <- "search_log_20131204_20131211.txt"
-code_file <- "codefix_log_20131204_20131211.txt"
+### Which files to process
+# After
+search_file <- "search_log_20131212_20131219.txt"
+code_file <- "codefix_log_20131212_20131219.txt"
+
+# Before
+# search_file <- "search_log_20131204_20131211.txt"
+# code_file <- "codefix_log_20131204_20131211.txt"
 
 ### =====================================================================
 ### Part of Data_Load_Prod mixed with 1_keyword_transition_ratio
@@ -197,12 +202,25 @@ setkey(keyword_search_counts_anl, Q)
 setkey(keyword.cat.data, keyword)
 
 # Merge to get the match
-click_ratio_cat_data = total_keyword_search [ keyword.cat.data[, keyword], nomatch = 0 ] [order(-total_clicks, Q)]
-conv_ratio_cat_data  = keyword_search_counts_anl [ keyword.cat.data[, keyword], nomatch = 0 ]
+click_ratio_cat_data <- total_keyword_search [ keyword.cat.data[, keyword], nomatch = 0 ] [order(-total_search, -total_clicks, Q)]
+conv_ratio_cat_data  <- keyword_search_counts_anl [ keyword.cat.data[, keyword], nomatch = 0 ] [order(-total_search, Q)]
+
+conv_ratio_cat_data_sum <- conv_ratio_cat_data[, list(total_ConvRate = sum(ConvRate)), 
+                                                 by = list(Q)]
+
+click_ratio_cat_data <- unique(click_ratio_cat_data)
+conv_ratio_cat_data  <- unique(conv_ratio_cat_data)
+conv_ratio_cat_data_sum  <- unique(conv_ratio_cat_data_sum)
+
 
 # Exports both results to CSVs
-write.csv(click_ratio_cat_data, file = "P:/Data_Analysis/Analysis_Results/click_ratio_before_1211.csv", na = '', row.names = FALSE)
-write.csv(conv_ratio_cat_data, file = "P:/Data_Analysis/Analysis_Results/conv_ratio_before_1211.csv", na = '', row.names = FALSE)
+# write.csv(click_ratio_cat_data, file = "P:/Data_Analysis/Analysis_Results/click_ratio_after_1211.csv", na = '', row.names = FALSE)
+# write.csv(conv_ratio_cat_data, file = "P:/Data_Analysis/Analysis_Results/conv_ratio_after_1211.csv", na = '', row.names = FALSE)
+write.csv(conv_ratio_cat_data_sum, file = "P:/Data_Analysis/Analysis_Results/total_conv_ratio_after_1211.csv", na = '', row.names = FALSE)
+
+# write.csv(click_ratio_cat_data, file = "P:/Data_Analysis/Analysis_Results/click_ratio_before_1211.csv", na = '', row.names = FALSE)
+# write.csv(conv_ratio_cat_data, file = "P:/Data_Analysis/Analysis_Results/conv_ratio_before_1211.csv", na = '', row.names = FALSE)
+# write.csv(conv_ratio_cat_data_sum, file = "P:/Data_Analysis/Analysis_Results/total_conv_ratio_before_1211.csv", na = '', row.names = FALSE)
 
 runTime <- Sys.time()-begTime 
 runTime
