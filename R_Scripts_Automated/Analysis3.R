@@ -5,12 +5,19 @@ gc() #it will free memory
 #Getting the required package
 require(plyr)
 
+# Getting dates and download type from command line arguments
+args <- commandArgs(trailingOnly = TRUE)
+
+from.date <- args[1]
+to.date <- args[2]
+download_type <- args[3]
+
 #Set working directory
-setwd("P:/Data_Analysis/Analysis_Results/")
+setwd(paste0("P:/Data_Analysis/Analysis_Results/", download_type, '_results/'))
 
 # Load already processed data
-image_file_name <- paste0("P:/Data_Analysis/Processed_R_Datasets/Data_Load_Prod_", 
-                          format(Sys.time(), "%m%d%Y"), ".RData")
+image_file_name <- paste0("P:/Data_Analysis/Processed_R_Datasets/", 
+                          paste("Data_Load_Prod", from.date, to.date, sep="_" ), ".RData")
 load(image_file_name) 
 
 # Trying to capture runtime
@@ -116,7 +123,7 @@ keyword_search_counts_anl_dt = url_parts_merge_dt[, `:=` (LinkCtg = sum(LinkCtg)
 keyword_search_counts_anl_dt = unique(setkey(keyword_search_counts_anl_dt, NULL))
 
 # Format csv name
-analysis_file = format_name("3_keyword_webid_partnumber");
+analysis_file <- paste0( paste("3_keyword_webid_partnumber", from.date, to.date, sep="_" ), ".csv" )
 
 # Exporting results in csv
 write.csv(keyword_search_counts_anl_dt, file = analysis_file, na = '', row.names = FALSE)

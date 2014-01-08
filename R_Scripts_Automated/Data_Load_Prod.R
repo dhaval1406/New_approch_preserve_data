@@ -5,14 +5,15 @@ gc() #it will free memory
 # Trying to capture runtime
 begTime <- Sys.time()
 
-# Getting file names from command line arguments
+# Getting file names and dates from command line arguments
 args <- commandArgs(trailingOnly = TRUE)
 
 search_log_file <- args[1]
 detailtab_log_file <- args[2]
 codefix_log_file <- args[3]
 
-rm(args)
+from.date <- args[4]
+to.date <- args[5]
 
 #Getting the required package
 require(plyr)
@@ -55,8 +56,7 @@ search_log$Q <- gsub("(.+[^s])s$", "\\1", search_log$Q)
 total_keyword_search <- ddply(search_log, .(Q), summarise, 
                               sum_link = sum(Status=='Link'), 
                               sum_linkCtg = sum(Status=='LinkCtg'), 
-                              total_search = sum (sum(Status=='NotFound'), (Status=='Hit'))
-							)
+                              total_search = sum (sum(Status=='NotFound'), (Status=='Hit')))
 
 # total_codefix <- ddply(codeFix_log, .(SessionId, Referer), summarise, 
 #                        #codefix_count = sum(Referer != ''), 
@@ -72,8 +72,7 @@ total_keyword_search <- ddply(search_log, .(Q), summarise,
 
 total_detailtab<- ddply(detailTab_log, .(SessionId, SERIES_CODE), summarise, 
                        #codefix_count = length(unique(c(SessionId)))x
-                       tab_count = length(unique(Tab_Name))
-)
+                       tab_count = length(unique(Tab_Name)))
 		
 # Merge total_keyword_search with search 
 # keyword_search_merge <- merge(search_log, total_keyword_search, all.x=TRUE, by="Q", sort=FALSE)
@@ -87,13 +86,12 @@ format_name <- function(x){
 }
 
 ### Save image of R data for further use
-image_file_name <- paste0("P:/Data_Analysis/Processed_R_Datasets/Data_Load_Prod_", 
-                          format(Sys.time(), "%m%d%Y"), ".RData"
-                         )
+image_file_name <- paste0("P:/Data_Analysis/Processed_R_Datasets/", 
+                          paste("Data_Load_Prod", from.date, to.date, sep="_" ), ".RData")
+
 save.image(image_file_name)
 
 runTime <- Sys.time()-begTime 
 runTime
 
 # ========================================== Test Area =================================================
-
