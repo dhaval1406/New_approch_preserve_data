@@ -5,8 +5,15 @@ gc() #it will free memory
 #Getting the required package
 require(data.table)
 
+# Getting dates and download type from command line arguments
+args <- commandArgs(trailingOnly = TRUE)
+
+from.date <- args[1]
+to.date <- args[2]
+download_type <- args[3]
+
 #Set working directory
-setwd("P:/Data_Analysis/Analysis_Results/")
+setwd(paste0("P:/Data_Analysis/Analysis_Results/", download_type, '_results/'))
 
 # Load already processed data
 load("P:/Data_Analysis/Processed_R_Datasets/Analysis_3.RData")
@@ -28,7 +35,7 @@ keyword_search_counts_anl_4 <- url_parts_merge[, list(LinkCtg=sum(LinkCtg),
                                                ] [, ConvRate := LinkCtg/total_search ] [ order(-total_search, Q, -LinkCtg) ];
 
 # Format csv name
-analysis_file = format_name("4_keyword_category");
+analysis_file <- paste0( paste("4_keyword_category", from.date, to.date, sep="_" ), ".csv" )
 
 # Exporting results in csv
 write.csv(keyword_search_counts_anl_4, file = analysis_file, na = '', row.names = FALSE)

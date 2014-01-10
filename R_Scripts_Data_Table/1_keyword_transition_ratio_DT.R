@@ -6,13 +6,19 @@ gc() #it will free memory
 #Getting the required package
 # require(plyr)
 require(data.table)
+# Getting dates and download type from command line arguments
+args <- commandArgs(trailingOnly = TRUE)
+
+from.date <- args[1]
+to.date <- args[2]
+download_type <- args[3]
 
 #Set working directory
-setwd("P:/Data_Analysis/Analysis_Results/")
+setwd(paste0("P:/Data_Analysis/Analysis_Results/", download_type, '_results/'))
 
 # Load already processed data
-image_file_name <- paste0("P:/Data_Analysis/Processed_R_Datasets/Data_Load_Prod_", 
-                          format(Sys.time(), "%m%d%Y"), ".RData")
+image_file_name <- paste0("P:/Data_Analysis/Processed_R_Datasets/", 
+                          paste("Data_Load_Prod", from.date, to.date, sep="_" ), ".RData")
 load(image_file_name) 
 
 # Trying to capture runtime
@@ -60,7 +66,7 @@ search_codefix_merge <- cbind( keyword_search_merge_anl,
                                                        by = list(Q, total_search, sum_linkCtg, sum_link)
                                                     ] [order(-total_search)] 
 # Format csv name
-analysis_file = format_name("1_keyword_transition_ratio");
+analysis_file <- paste0( paste("1_keyword_transition_ratio", from.date, to.date, sep="_" ), ".csv" )
 
 # Exporting results in csv
 write.csv(keyword_search_counts_anl, file = analysis_file, na = "0", row.names = FALSE)

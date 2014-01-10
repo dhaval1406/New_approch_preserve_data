@@ -5,6 +5,16 @@ gc() #it will free memory
 # Trying to capture runtime
 begTime <- Sys.time()
 
+# Getting file names and dates from command line arguments
+args <- commandArgs(trailingOnly = TRUE)
+
+search_log_file <- args[1]
+detailtab_log_file <- args[2]
+codefix_log_file <- args[3]
+
+from.date <- args[4]
+to.date <- args[5]
+
 #Getting the required package
 require(plyr)
 require(data.table)
@@ -13,9 +23,9 @@ require(bit64)
 setwd("P:/Data_Analysis/Weblog_Data/")
 
 #Importing data
-search_log <- fread('search_log_20130901_20131001.txt', header = TRUE, sep = "\t", na.strings=c("NA", '')) 
-codeFix_log <- fread('codefix_log_20130901_20131001.txt', header = TRUE, sep = "\t", na.strings=c("NA", '')) 
-detailTab_log <- fread('detailtab_log_test.txt', header = TRUE, sep = "\t", na.strings=c("NA", '')) 
+search_log <- fread(search_log_file, header = TRUE, sep = "\t", na.strings=c("NA", '')) 
+codeFix_log <- fread(codefix_log_file, header = TRUE, sep = "\t", na.strings=c("NA", '')) 
+detailTab_log <- fread(detailtab_log_file, header = TRUE, sep = "\t", na.strings=c("NA", '')) 
 
 category <- fread('category.csv', header = FALSE, sep = ",", na.strings=c("NA", ''))
 
@@ -93,8 +103,9 @@ format_name <- function(x){
 }
 
 ### Save image of R data for further use
-image_file_name <- paste0("P:/Data_Analysis/Processed_R_Datasets/Data_Load_Prod_", 
-                          format(Sys.time(), "%m%d%Y"), ".RData")
+image_file_name <- paste0("P:/Data_Analysis/Processed_R_Datasets/", 
+                          paste("Data_Load_Prod", from.date, to.date, sep="_" ), ".RData")
+
 save.image(image_file_name)
 
 runTime <- Sys.time()-begTime 
