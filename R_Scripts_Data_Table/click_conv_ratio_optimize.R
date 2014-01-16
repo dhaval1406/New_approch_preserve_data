@@ -17,34 +17,37 @@ gc() #it will free memory
 # Trying to capture runtime
 begTime <- Sys.time()
 
+# Getting file names and dates from command line arguments
+args <- commandArgs(trailingOnly = TRUE)
+
+search_log_file <- args[1]
+detailtab_log_file <- args[2]
+codefix_log_file <- args[3]
+
+from.date <- args[4]
+to.date <- args[5]
+
 #Getting the required package
 require(data.table)
 require(xlsx)
 require(RCurl)
 require(bit64)
 require(plyr)
-#Set working directory
+
+#Setting directories
 setwd("P:/Data_Analysis/Weblog_Data/")
+results_dir <- "P:/Data_Analysis/Analysis_Results/"
 
 # Using keyword_category_121113.xls 
 keyword.cat.data <- as.data.table(read.xlsx("keyword_category_121113.xls", sheetIndex=1, stringsAsFactors= F, encoding='UTF-8'))
-
-### Which files to process
-# After
-search_file <- "search_log_20131212_20131219.txt"
-code_file <- "codefix_log_20131212_20131219.txt"
-
-# Before
-# search_file <- "search_log_20131204_20131211.txt"
-# code_file <- "codefix_log_20131204_20131211.txt"
 
 ### =====================================================================
 ### Part of Data_Load_Prod mixed with 1_keyword_transition_ratio
 ### =====================================================================
 
 #Importing data
-search_log <- fread(search_file, header = TRUE, sep = "\t", na.strings=c("NA", '')) 
-codeFix_log <- fread(code_file, header = TRUE, sep = "\t", na.strings=c("NA", '')) 
+search_log <- fread(search_log_file, header = TRUE, sep = "\t", na.strings=c("NA", '')) 
+codeFix_log <- fread(codefix_log_file, header = TRUE, sep = "\t", na.strings=c("NA", '')) 
 
 category <- fread('category.csv', header = FALSE, sep = ",", na.strings=c("NA", ''))
 
@@ -62,7 +65,8 @@ setnames(category, c("cat_id_1", "cat_name_1","cat_id_2", "cat_name_2","cat_id_3
 
 # removing blank series codes and conver  keywords to lower case and 
 # removing internal acccounts with CUSTCD = "WOSMUS"
-search_log <- search_log[!is.na(Q) & (!(CUSTCD == "WOSMUS") | (is.na(CUSTCD)))] [,`:=` (CUSTCD= NULL, Q= tolower(Q))]
+# 01/13/14 - Added SEARCH_TYPE == 1 to keep only "keyword search" and not suggestions
+search_log <- search_log[!is.na(Q) & ( !(CUSTCD == "WOSMUS") | (is.na(CUSTCD)) ) & (SEARCH_TYPE == 1)] [, Q := tolower(Q)]
 codeFix_log <- codeFix_log[!(CUSTCD == "WOSMUS") | (is.na(CUSTCD))] [, CUSTCD := NULL]
 
 # Formatting Series_Code - fread assigns it to class 'integer64'
@@ -205,23 +209,53 @@ setkey(keyword.cat.data, keyword)
 click_ratio_cat_data <- total_keyword_search [ keyword.cat.data[, keyword], nomatch = 0 ] [order(-total_search, -total_clicks, Q)]
 conv_ratio_cat_data  <- keyword_search_counts_anl [ keyword.cat.data[, keyword], nomatch = 0 ] [order(-total_search, Q)]
 
-conv_ratio_cat_data_sum <- conv_ratio_cat_data[, list(total_ConvRate = sum(ConvRate)), 
-                                                 by = list(Q)]
-
+# Keeping unique records
 click_ratio_cat_data <- unique(click_ratio_cat_data)
 conv_ratio_cat_data  <- unique(conv_ratio_cat_data)
+
+# Summarize conversion rate and total_codfix
+conv_ratio_cat_data_sum <- conv_ratio_cat_data[, list(total_ConvRate = sum(ConvRate), total_codeFix_sum = sum(total_codefix_linkCtg)), 
+                                                 by = list(Q, total_search)]
+# Keeping unique records
 conv_ratio_cat_data_sum  <- unique(conv_ratio_cat_data_sum)
 
+#=================================================================== 
+### Non optimized keywords only - little opposite from the above
+#===================================================================
+
+# Merge to get the match
+click_ratio_cat_data_non <- total_keyword_search [ !keyword.cat.data[, keyword]] [order(-total_search, -total_clicks, Q)]
+conv_ratio_cat_data_non  <- keyword_search_counts_anl [ !keyword.cat.data[, keyword]] [order(-total_search, Q)]
+
+# Keeping unique records
+click_ratio_cat_data_non <- unique(click_ratio_cat_data_non)
+conv_ratio_cat_data_non  <- unique(conv_ratio_cat_data_non)
+
+# Summarize conversion rate and total_codfix
+conv_ratio_cat_data_sum_non <- conv_ratio_cat_data_non[, list(total_ConvRate = sum(ConvRate), total_codeFix_sum = sum(total_codefix_linkCtg)), 
+                                                 by = list(Q, total_search)]
+# Keeping unique records
+conv_ratio_cat_data_sum_non  <- unique(conv_ratio_cat_data_sum_non)
+
+# Format csv name
+click_ratio_file      <- paste0( results_dir, paste("click_ratio", from.date, to.date, sep="_" ), ".csv" )
+conv_ratio_file       <- paste0( results_dir, paste("conv_ratio", from.date, to.date, sep="_" ), ".csv" )
+total_conv_ratio_file <- paste0( results_dir, paste("total_conv_ratio", from.date, to.date, sep="_" ), ".csv" )
+
+click_ratio_file_non      <- paste0( results_dir, paste("click_ratio_non", from.date, to.date, sep="_" ), ".csv" )
+conv_ratio_file_non       <- paste0( results_dir, paste("conv_ratio_non", from.date, to.date, sep="_" ), ".csv" )
+total_conv_ratio_file_non <- paste0( results_dir, paste("total_conv_ratio_non", from.date, to.date, sep="_" ), ".csv" )
 
 # Exports both results to CSVs
-# write.csv(click_ratio_cat_data, file = "P:/Data_Analysis/Analysis_Results/click_ratio_after_1211.csv", na = '', row.names = FALSE)
-# write.csv(conv_ratio_cat_data, file = "P:/Data_Analysis/Analysis_Results/conv_ratio_after_1211.csv", na = '', row.names = FALSE)
-write.csv(conv_ratio_cat_data_sum, file = "P:/Data_Analysis/Analysis_Results/total_conv_ratio_after_1211.csv", na = '', row.names = FALSE)
+write.csv(click_ratio_cat_data, file = click_ratio_file, na = '', row.names = FALSE)
+write.csv(conv_ratio_cat_data, file = conv_ratio_file, na = '', row.names = FALSE)
+write.csv(conv_ratio_cat_data_sum, file = total_conv_ratio_file, na = '', row.names = FALSE)
 
-# write.csv(click_ratio_cat_data, file = "P:/Data_Analysis/Analysis_Results/click_ratio_before_1211.csv", na = '', row.names = FALSE)
-# write.csv(conv_ratio_cat_data, file = "P:/Data_Analysis/Analysis_Results/conv_ratio_before_1211.csv", na = '', row.names = FALSE)
-# write.csv(conv_ratio_cat_data_sum, file = "P:/Data_Analysis/Analysis_Results/total_conv_ratio_before_1211.csv", na = '', row.names = FALSE)
+write.csv(click_ratio_cat_data_non, file = click_ratio_file_non, na = '', row.names = FALSE)
+write.csv(conv_ratio_cat_data_non, file = conv_ratio_file_non, na = '', row.names = FALSE)
+write.csv(conv_ratio_cat_data_sum_non, file = total_conv_ratio_file_non, na = '', row.names = FALSE)
 
 runTime <- Sys.time()-begTime 
 runTime
+
 #=========================================================== Test the results =============================================
