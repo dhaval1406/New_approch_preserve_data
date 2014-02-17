@@ -46,7 +46,8 @@ setnames(category, c("cat_id_1", "cat_name_1","cat_id_2", "cat_name_2","cat_id_3
 
 # removing blank series codes and conver  keywords to lower case and 
 # removing internal acccounts with CUSTCD = "WOSMUS"
-search_log <- search_log[!is.na(Q) & (!(CUSTCD == "WOSMUS") | (is.na(CUSTCD)))] [,`:=` (CUSTCD= NULL, Q= tolower(Q))]
+# 01/13/14 - Added SEARCH_TYPE == 1 to keep only "keyword search" and not suggestions
+search_log <- search_log[!is.na(Q) & ( !(CUSTCD == "WOSMUS") | (is.na(CUSTCD)) ) & (SEARCH_TYPE == 1)] [, Q := tolower(Q)]
 codeFix_log <- codeFix_log[!(CUSTCD == "WOSMUS") | (is.na(CUSTCD))] [, CUSTCD := NULL]
 
 # For analysis # 3, non blank Referer is used

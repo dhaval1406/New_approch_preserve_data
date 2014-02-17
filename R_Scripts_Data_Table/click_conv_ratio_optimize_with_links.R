@@ -8,6 +8,7 @@
 ### 
 ### Click ratio =  Number of clicks (sum_link+sum_Ctg)/Total queries(total_searches)
 ### Conversion ratio = Number of codefix (LinkCtg)/Total queries(total_searches)
+###             
 ### ==============================================================================================
 
 # List the files and removing everything
@@ -36,6 +37,7 @@ require(plyr)
 #Setting directories
 setwd("P:/Data_Analysis/Weblog_Data/")
 results_dir <- "P:/Data_Analysis/Analysis_Results/shiny_data/"
+results_dir_q <- "Q:/marketingshared/Web Reports/Data_Analysis/click_conversion_ratio/"
 
 # Using keyword_category_121113.xls 
 keyword.cat.data <- as.data.table(read.xlsx("keyword_category_121113.xls", sheetIndex=1, stringsAsFactors= F, encoding='UTF-8'))
@@ -43,8 +45,7 @@ keyword.cat.data <- as.data.table(read.xlsx("keyword_category_121113.xls", sheet
 ### =====================================================================
 ### Part of Data_Load_Prod mixed with 1_keyword_transition_ratio
 ### =====================================================================
-
-#Importing data
+# Importing data
 
 # search_log <- as.data.table(read.delim(search_log_file, header = TRUE, sep = "\t", , na.strings=c("NA", ''), encoding="UTF-8"))
 # codeFix_log <- as.data.table(read.delim(codefix_log_file, header = TRUE, sep = "\t", , na.strings=c("NA", ''), encoding="UTF-8"))
@@ -53,6 +54,10 @@ search_log <- fread(search_log_file, header = TRUE, sep = "\t", na.strings=c("NA
 codeFix_log <- fread(codefix_log_file, header = TRUE, sep = "\t", na.strings=c("NA", '')) 
 
 category <- fread('category.csv', header = FALSE, sep = ",", na.strings=c("NA", ''))
+
+# Get rid of MIke's crawler ip
+search_log <- search_log[IP != "69.47.201.40"]
+codeFix_log <- codeFix_log[IP != "69.47.201.40"]
 
 #clean up data
 search_log[, c("USER_CODE",  "CookieId", "BRD_CODE", "IP", "UA", "LogFileName", "UpdateDate", "V17") := NULL]
@@ -86,7 +91,12 @@ search_log[, `:=` (sum_link = sum(Status=='Link'),
                    sum_linkCtg = sum(Status=='LinkCtg'), 
                    total_search = sum (sum(Status=='NotFound'), (Status=='Hit')),
                    total_clicks = sum (sum(Status=='Link'), (Status=='LinkCtg')),
-                   click_ratio = ( sum (sum(Status=='Link'), (Status=='LinkCtg')) ) / ( sum (sum(Status=='NotFound'), (Status=='Hit'))) ),  
+                   click_ratio = round ( (sum (sum(Status=='Link'), 
+                                               (Status=='LinkCtg')) ) / 
+                                         ( sum (sum(Status=='NotFound'),
+                                                (Status=='Hit'))), 3 
+                                       ) 
+                   ),  
             by=Q] 
 
 # To get correct unique records, setting key to NULL
@@ -96,7 +106,6 @@ total_keyword_search <- unique(search_log[, c("Q", "sum_link", "sum_linkCtg", "t
 ### =====================================================================
 ### Part of Analysis # 3_keyword_webid_partnumber
 ### =====================================================================
-
 ### Summarize CodeFix counts
   total_codefix <- codeFix_log
   
@@ -116,17 +125,17 @@ total_keyword_search <- unique(search_log[, c("Q", "sum_link", "sum_linkCtg", "t
   # Keep only link to count codefix for links
   search_log_link <- search_log [Status=='Link']
 
-#Keep only records with LinkCtg to save time on merging unnecessary records
-search_log <- search_log [Status=='LinkCtg']
+  # Keep only records with LinkCtg to save time on merging unnecessary records
+  search_log <- search_log [Status=='LinkCtg']
 
-# Assign to keyword_search_merge_anl to make it consistent
-keyword_search_merge_anl <- search_log
+  # Assign to keyword_search_merge_anl to make it consistent
+  keyword_search_merge_anl <- search_log
 
 #======================================= new url ==========================================
-  #Coverting URLs to character to avoid any error messages
+  # Coverting URLs to character to avoid any error messages
   keyword_search_merge_anl$Link_URL <- as.character(keyword_search_merge_anl$Link_URL)
 
-# Split URL by / using perl reg ex - it will return a list within list
+  # Split URL by / using perl reg ex - it will return a list within list
   url_parts_search <- lapply(keyword_search_merge_anl$Link_URL, strsplit, "/", perl=TRUE)
   
   # create dateframe from the list of list, since the url part are not same - so it will result in differnt number of columns
@@ -141,7 +150,6 @@ keyword_search_merge_anl <- search_log
   # Convert data.frame to data.table
   url_parts_search <- as.data.table(url_parts_search)  
 #==========================================================================================
-
 # Get unique values before merge
 keyword_search_merge_anl <- url_parts_search[, list(LinkCtg=.N), 
                                              by=list(Q, SessionId, Link_URL, sum_link, sum_linkCtg, total_search, X6, X7, X8, X9, X10)]
@@ -210,16 +218,15 @@ search_codefix_merge = unique(search_codefix_merge)
 ### ===========================================================
 ### Part of Analysis # 4_keyword_category
 ### ===========================================================
-
 # Summarize based on Link Categories
 # Finding coversion rate, total_codefix_linkCtg / total_search
 # Sorting the data based on total search (desc), keywords and number of link categories(desc)
-
+# 02122014 - Link_URL added to obtain the URL and last category code
   keyword_search_counts_anl <- url_parts_merge[, list(LinkCtg=sum(LinkCtg), 
                                                       total_codefix_linkCtg = sum(codefix_count, na.rm = T)),
-                                                 by=list(Q, cat_name_1, cat_name_2, cat_name_3, cat_name_4, cat_name_5, total_search, sum_link, sum_linkCtg)
+                                                 by=list(Q, cat_name_1, cat_name_2, cat_name_3, cat_name_4, cat_name_5, total_search, sum_link, sum_linkCtg, Link_URL)
                                                
-                                               ] [, ConvRate := total_codefix_linkCtg/total_search ] [ order(-total_search, Q, -LinkCtg) ]
+                                               ] [, ConvRate := round(total_codefix_linkCtg/total_search, 3) ] [ order(-total_search, Q, -LinkCtg) ]
 
   # Merge to with codefix_link results - 02052014 - changed all.x to all, and total_search added in by
   keyword_search_counts_anl <- merge(keyword_search_counts_anl,
@@ -228,6 +235,13 @@ search_codefix_merge = unique(search_codefix_merge)
                                      all =TRUE,
                                      sort = FALSE)
 
+### ============================================================
+###   Create link/url  for conversion rate by categoreis
+####  Using last category Id from the Link_URL
+### ===========================================================
+keyword_search_counts_anl$new_url  <- paste0 ("<a href=", keyword_search_counts_anl$Link_URL, 
+                                              " target=_blank>", gsub(".*/(\\w+)/$", "\\1", keyword_search_counts_anl$Link_URL), 
+                                              "</a>")  
 ### ===========================================================
 ### Keep only keywords that match keyword.cat.data
 ### ===========================================================
@@ -246,11 +260,17 @@ conv_ratio_cat_data  <- unique(conv_ratio_cat_data)
 
 # Summarize conversion rate and total_codfix 
 # 02062014 - changed logic for total_ConvRate. Included codefix_link in the count as well
-conv_ratio_cat_data_sum <- conv_ratio_cat_data[, list(total_ConvRate = ( sum(total_codefix_linkCtg, na.rm = T) + codefix_link )/total_search , 
-                                                      total_codeFix_sum = sum(total_codefix_linkCtg, na.rm = T)), 
+conv_ratio_cat_data_sum <- conv_ratio_cat_data[, list(total_ConvRate = round( (sum (sum (total_codefix_linkCtg, na.rm = T), 
+                                                                                    codefix_link, 
+                                                                                    na.rm = T)) / total_search, 3), 
+                                                      total_codeFix_sum = sum (total_codefix_linkCtg, na.rm = T)), 
                                                  by = list(Q, total_search, codefix_link)]
 # Keeping unique records
 conv_ratio_cat_data_sum  <- unique(conv_ratio_cat_data_sum)
+
+# Keeping only records that has valid Link_URL and so as new_url
+conv_ratio_cat_data <- conv_ratio_cat_data[!is.na(conv_ratio_cat_data$Link_URL)]
+conv_ratio_cat_data$Link_URL <- NULL
 
 #=================================================================== 
 ### Non optimized keywords only - little opposite from the above
@@ -265,34 +285,42 @@ conv_ratio_cat_data_non  <- unique(conv_ratio_cat_data_non)
 
 # Summarize conversion rate and total_codfix
 # 02062014 - changed logic for total_ConvRate. Included codefix_link in the count as well
-conv_ratio_cat_data_sum_non <- conv_ratio_cat_data_non[, list(total_ConvRate = ( sum(total_codefix_linkCtg, na.rm = T) + codefix_link )/total_search , 
-                                                              total_codeFix_sum = sum(total_codefix_linkCtg, na.rm = T)), 
+conv_ratio_cat_data_sum_non <- conv_ratio_cat_data_non[, list(total_ConvRate = round( (sum (sum (total_codefix_linkCtg, na.rm = T), 
+                                                                                    codefix_link, 
+                                                                                    na.rm = T)) / total_search, 3), 
+                                                              total_codeFix_sum = sum (total_codefix_linkCtg, na.rm = T)), 
                                                        by = list(Q, total_search, codefix_link)]
 # Keeping unique records
-conv_ratio_cat_data_sum_non  <- unique(conv_ratio_cat_data_sum_non)
+conv_ratio_cat_data_sum_non <- unique(conv_ratio_cat_data_sum_non)
 
+# Keeping only records that has valid Link_URL and so as new_url
+conv_ratio_cat_data_non <- conv_ratio_cat_data_non[!is.na(conv_ratio_cat_data_non$Link_URL)]
+conv_ratio_cat_data_non$Link_URL <- NULL
 #=================================================================== 
 ### Format csv names
 #===================================================================
-click_ratio_file      <- paste0( results_dir, paste("click_ratio", from.date, to.date, sep="_" ), ".csv" )
-conv_ratio_file       <- paste0( results_dir, paste("conv_ratio", from.date, to.date, sep="_" ), ".csv" )
-total_conv_ratio_file <- paste0( results_dir, paste("total_conv_ratio", from.date, to.date, sep="_" ), ".csv" )
+for (dir_name in c(results_dir, results_dir_q)){
 
-click_ratio_file_non      <- paste0( results_dir, paste("non_click_ratio", from.date, to.date, sep="_" ), ".csv" )
-conv_ratio_file_non       <- paste0( results_dir, paste("non_conv_ratio", from.date, to.date, sep="_" ), ".csv" )
-total_conv_ratio_file_non <- paste0( results_dir, paste("non_total_conv_ratio", from.date, to.date, sep="_" ), ".csv" )
+  click_ratio_file      <- paste0( dir_name, paste("click_ratio", from.date, to.date, sep="_" ), ".csv" )
+  conv_ratio_file       <- paste0( dir_name, paste("conv_ratio", from.date, to.date, sep="_" ), ".csv" )
+  total_conv_ratio_file <- paste0( dir_name, paste("total_conv_ratio", from.date, to.date, sep="_" ), ".csv" )
+  
+  click_ratio_file_non      <- paste0( dir_name, paste("non_click_ratio", from.date, to.date, sep="_" ), ".csv" )
+  conv_ratio_file_non       <- paste0( dir_name, paste("non_conv_ratio", from.date, to.date, sep="_" ), ".csv" )
+  total_conv_ratio_file_non <- paste0( dir_name, paste("non_total_conv_ratio", from.date, to.date, sep="_" ), ".csv" )
+  
+  #=================================================================== 
+  ### Exports both results to CSVs
+  #===================================================================
+  write.csv(click_ratio_cat_data, file = click_ratio_file, na = "0", row.names = FALSE)
+  write.csv(conv_ratio_cat_data, file = conv_ratio_file, na = '', row.names = FALSE)
+  write.csv(conv_ratio_cat_data_sum, file = total_conv_ratio_file, na = "0", row.names = FALSE)
+  
+  write.csv(click_ratio_cat_data_non, file = click_ratio_file_non, na = "0", row.names = FALSE)
+  write.csv(conv_ratio_cat_data_non, file = conv_ratio_file_non, na = '', row.names = FALSE)
+  write.csv(conv_ratio_cat_data_sum_non, file = total_conv_ratio_file_non, na = "0", row.names = FALSE)
 
-#=================================================================== 
-### Exports both results to CSVs
-#===================================================================
-write.csv(click_ratio_cat_data, file = click_ratio_file, na = "0", row.names = FALSE)
-write.csv(conv_ratio_cat_data, file = conv_ratio_file, na = '', row.names = FALSE)
-write.csv(conv_ratio_cat_data_sum, file = total_conv_ratio_file, na = "0", row.names = FALSE)
-
-write.csv(click_ratio_cat_data_non, file = click_ratio_file_non, na = "0", row.names = FALSE)
-write.csv(conv_ratio_cat_data_non, file = conv_ratio_file_non, na = '', row.names = FALSE)
-write.csv(conv_ratio_cat_data_sum_non, file = total_conv_ratio_file_non, na = "0", row.names = FALSE)
-
+}  
 #=================================================================== 
 ### Appending the files names to from_to_dates - that is being used 
 ### by shiny webapp
@@ -302,6 +330,8 @@ append_data <- data.frame("from_date" = as.Date(from.date,'%m%d%Y'),
                           "file_name" = c(paste0(paste("click_ratio", from.date, to.date, sep="_" ), ".csv"), 
                                           paste0(paste("non_click_ratio", from.date, to.date, sep="_" ), ".csv"), 
                                           paste0(paste("total_conv_ratio", from.date, to.date, sep="_" ), ".csv"), 
+                                          paste0(paste("conv_ratio", from.date, to.date, sep="_" ), ".csv"), 
+                                          paste0(paste("non_conv_ratio", from.date, to.date, sep="_" ), ".csv"), 
                                           paste0(paste("non_total_conv_ratio", from.date, to.date, sep="_" ), ".csv")))
 
 write.table(append_data, file = paste0(results_dir, "from_to_dates.csv"), append = TRUE, sep = ",", na = "0", row.names = FALSE, col.names = FALSE)
@@ -310,3 +340,4 @@ runTime <- Sys.time()-begTime
 runTime
 
 #=========================================================== Test the results =============================================
+#<a href=http://www.misumiusa.com target=_blank>shaft</a>

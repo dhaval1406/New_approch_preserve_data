@@ -46,6 +46,10 @@ keyword.cat.data <- as.data.table(read.xlsx("keyword_category_121113.xls", sheet
 ### =====================================================================
 
 #Importing data
+
+# search_log <- as.data.table(read.delim(search_log_file, header = TRUE, sep = "\t", , na.strings=c("NA", ''), encoding="UTF-8"))
+# codeFix_log <- as.data.table(read.delim(codefix_log_file, header = TRUE, sep = "\t", , na.strings=c("NA", ''), encoding="UTF-8"))
+
 search_log <- fread(search_log_file, header = TRUE, sep = "\t", na.strings=c("NA", '')) 
 codeFix_log <- fread(codefix_log_file, header = TRUE, sep = "\t", na.strings=c("NA", '')) 
 
@@ -89,13 +93,6 @@ search_log[, `:=` (sum_link = sum(Status=='Link'),
 # To get correct unique records, setting key to NULL
 setkey(search_log, NULL)
 total_keyword_search <- unique(search_log[, c("Q", "sum_link", "sum_linkCtg", "total_search", "total_clicks", "click_ratio"), with=FALSE])
-
-# Function to format resultant CSV - generated during different analysis
-format_name <- function(x){
-  time.stamp = format(Sys.time(), "%m%d%Y")
-  file.name = paste(x, sprintf("%s.csv", time.stamp), sep="_")
-  return(file.name)
-}
 
 ### =====================================================================
 ### Part of Analysis # 3_keyword_webid_partnumber
@@ -195,7 +192,7 @@ keyword_search_counts_anl <- url_parts_merge[, list(LinkCtg=sum(LinkCtg),
                                                       total_codefix_linkCtg = sum(codefix_count, na.rm = T)),
                                                  by=list(Q, cat_name_1, cat_name_2, cat_name_3, cat_name_4, cat_name_5, total_search, sum_link, sum_linkCtg)
                                                
-                                               ] [, ConvRate := LinkCtg/total_search ] [ order(-total_search, Q, -LinkCtg) ];
+                                               ] [, ConvRate := LinkCtg/total_search ] [ order(-total_search, Q, -LinkCtg) ]
 
 ### ===========================================================
 ### Keep only keywords that match keyword.cat.data
