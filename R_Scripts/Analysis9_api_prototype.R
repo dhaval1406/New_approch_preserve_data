@@ -1,4 +1,4 @@
-# This program uses the analysis results from Analysis_8
+# This program uses the analysis results from Analysis_8_prototype.R
 # Below are the brief steps of this program
 #   - Gets the information using API, for each unique keywords
 #   - Makes a big dataframe using API results
@@ -153,7 +153,6 @@ save(category, codeFix_log, codefix_merge, codefix_merge_dt, detailTab_log, keyw
 # Load already processed data
 load("P:/Data_Analysis/Processed_R_Datasets/2months_data.RData") 
 
-
 ####### Creating stemmed keyword list for Johnny #####
 total_keyword_search.orig <- total_keyword_search
 
@@ -164,7 +163,6 @@ total_keyword_search <- ddply(total_keyword_search, .(Q), summarise,
                               sum_linkCtg = sum(sum_linkCtg), 
                               total_search = sum (total_search)
     					)
-
 
 total_keyword_search <- order(total_keyword_search, -total_keyword_search$total_search)
 
@@ -191,15 +189,3 @@ temp.stemmed.merged.sorted.total <- temp.stemmed.merged.sorted.total[order(-temp
 # unique(temp.stemmed.merged[temp.stemmed.merged$Q=="shaft", ])
 
 write.csv(temp.stemmed.merged.sorted.total, file = 'keyword_analysis_categories_stemmed.csv', na = '', row.names = FALSE)
-
-################### TESTING Area ###################
-##### Download searchlog from website directly
-my_url <- "http://172.24.210.21/reference/download/download.php?startdate[Y]=2013&startdate[m]=09&startdate[d]=11&endtdate[Y]=2013&endtdate[m]=09&endtdate[d]=12&table=worldmvlog.us_dt_search_fix_ip"
-x = getURL(my_url,  userpwd = "29_ykaneda:6T06YeBu0F5si1s")
-txtvec = strsplit(x,'\n')[[1]]
-ta.da <- read.delim(textConnection(txtvec), header = TRUE, sep = "\t", quote = "", comment.char = "", na.strings=c("NA", ''))
-
-
-##########
-### To add total number of search column 
-

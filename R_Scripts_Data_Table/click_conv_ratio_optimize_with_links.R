@@ -2,7 +2,7 @@
 ### Goal: To analyse the keyword search results before and after optimizations. 
 ### To measure: calculate click and conversion ratio for first round or keyword mappings 
 ###             and compare results before and after optimization for keywords 
-
+###
 ### Its mix of 3 different analysis: 1_keyword_transition_ratio, 3_keyword_webid_partnumber and
 ###                                  4_keyword_category  
 ### 
@@ -40,7 +40,7 @@ results_dir <- "P:/Data_Analysis/Analysis_Results/shiny_data/"
 results_dir_q <- "Q:/marketingshared/Web Reports/Data_Analysis/click_conversion_ratio/"
 
 # Using keyword_category_121113.xls 
-keyword.cat.data <- as.data.table(read.xlsx("keyword_category_121113.xls", sheetIndex=1, stringsAsFactors= F, encoding='UTF-8'))
+keyword.cat.data <- as.data.table(read.xlsx("keyword_category_022714.xls", sheetIndex=1, stringsAsFactors= F, encoding='UTF-8'))
 
 ### =====================================================================
 ### Part of Data_Load_Prod mixed with 1_keyword_transition_ratio
@@ -321,12 +321,13 @@ for (dir_name in c(results_dir, results_dir_q)){
   write.csv(conv_ratio_cat_data_sum_non, file = total_conv_ratio_file_non, na = "0", row.names = FALSE)
 
 }  
+
 #=================================================================== 
 ### Appending the files names to from_to_dates - that is being used 
 ### by shiny webapp
 #===================================================================
-append_data <- data.frame("from_date" = as.Date(from.date,'%m%d%Y'), 
-                          "to.date"   = as.Date(to.date,"%m%d%Y"), 
+append_data <- data.frame("from_date" = format(as.Date(from.date,'%m%d%Y'), '%m/%d/%Y'), 
+                          "to.date"   = format(as.Date(to.date,'%m%d%Y'), '%m/%d/%Y'), 
                           "file_name" = c(paste0(paste("click_ratio", from.date, to.date, sep="_" ), ".csv"), 
                                           paste0(paste("non_click_ratio", from.date, to.date, sep="_" ), ".csv"), 
                                           paste0(paste("total_conv_ratio", from.date, to.date, sep="_" ), ".csv"), 
