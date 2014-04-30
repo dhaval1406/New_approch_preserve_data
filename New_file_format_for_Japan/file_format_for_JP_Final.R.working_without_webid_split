@@ -1,0 +1,91 @@
+# Setting up working directory
+setwd("P:/Data_Analysis/Keyword_Analysis_Results_Gordana")
+
+################################################
+#  Convert Keyword analysis file to JP format  #
+#  Format : File needs to be `tab delimited`   #
+#          Multi-value fields (Series_Code)    #
+#          are comma seperated                 #
+################################################
+
+convert_jp_format <- function(file = NULL, preprocess = "No"){
+
+  # Check that "file" is non-NULL; else throw error
+    if(is.null(file)){
+      stop("NULL file name")    
+    }
+  # Check that "preprocess" is yes or no; else throw error
+    if(!tolower(preprocess) %in% c("yes", "no")){
+      stop("Value for preprocess is not yes or no")    
+    }
+
+  # Read the csv file from keyword analysis
+    keyword.data <- read.csv(file, header=T, , quote = "\"", comment.char = "", na.strings=c("NA", ''), , stringsAsFactors = F)
+
+    if(tolower(preprocess) == "yes"){
+      
+        # Add No. field to make it consistent with Gordana's file
+        keyword.data$No. <- 1:nrow(keyword.data)
+        
+        # Split Category_Id column for new line character.
+        my.list <- strsplit(keyword.data[, 2], "\n")
+        
+        # Splits Category Id into different rows
+        rep_times <- vapply(my.list, FUN=length, FUN.VALUE=integer(1))
+        
+        # Data frame with correct repetition of keywords and order number
+        # By splitting line seperated field into seperate rows
+        keyword.data <- data.frame(Category_Id=unlist(my.list), Q=rep(keyword.data$Q, rep_times), No. = rep(keyword.data$No., rep_times ) )
+        
+    }    
+    
+  # Keeping unique required columns from the data
+    keyword.data <- unique(keyword.data[, c("No.", "Q", "Category_Id")])
+  
+  # Clean up data - Remove blank Category_Ids
+  #               - Selcet rows without unnecessary known words from Category_Id
+  #               - Selcet rows without known special characters from keywords             
+    keyword.data <- keyword.data[!is.na(keyword.data$Category_Id), ]
+    keyword.data <- keyword.data[c(grep("http|not found|product match|customer|tel|inquire|new", keyword.data$Category_Id, ignore.case=T, invert=T)), ]
+    keyword.data <- keyword.data[c(grep("\\?", keyword.data$Q, ignore.case=T, invert=T)), ]
+
+  # Records with web-ids
+    web_ids <- grep("^[0-9]+$", keyword.data$Category_Id, ignore.case=T)
+
+  # Splitting Category Ids and Web Ids  
+    keyword.data.web_ids <- keyword.data[web_ids, ]
+    keyword.data.cat_ids <- keyword.data[-web_ids, ]
+    
+  # Used aggregate.data.frame to Combine multiple columns by a specific column value. 
+  # This will return a data frame with a list of Cat values. 
+    keyword.cat.merge <- aggregate.data.frame(keyword.data$Category_Id, by=list(keyword.data$Q, keyword.data$No.), paste)
+  
+  # Used sapply with paste function to collapse by ,. This will make the comma seperated category ids in the same columns
+    keyword.cat.merge$x <- sapply(keyword.cat.merge$x, paste, collapse = ",")
+
+  # Add number 2 as the last column - Japan wants it in this format    
+    keyword.cat.merge$jpCode <- 2
+
+  # Keeping what we need 
+    final.data <- keyword.cat.merge[, -2]
+  
+  # Exporting the results as tab delimited file (with comma seperated categories fields)  
+  #  write.table(final.data, file="keyword_cat_jp_format.txt", quote = F, sep="\t", col.names=F, row.names= F)
+    
+   return(final.data)
+}
+
+############################## Calling Function ##################################
+# grep("^[0-9]+$", keyword.data$Category_Id, ignore.case=T)
+
+converted.file.1 <- convert_jp_format("Keywords_analysis_categories.csv", "No")
+converted.file.2 <- convert_jp_format("Not_found_kwrds.csv", "Yes")
+
+# combined both converted files together
+final.data <- rbind(converted.file.1, converted.file.2)
+
+# Exporting the results as tab delimited file (with comma seperated categories fields)  
+write.table(final.data, file="keyword_cat_jp_format_merged.txt", quote = F, sep="\t", col.names=F, row.names= F)
+    
+
+
