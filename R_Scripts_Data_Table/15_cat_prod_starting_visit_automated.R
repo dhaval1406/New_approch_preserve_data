@@ -34,13 +34,12 @@ require(lubridate)
   # Getting file names from command line arguments
   args <- commandArgs(trailingOnly = TRUE)
   
-  # s.file <- args[1]
-  # c.file <- args[2]
-  # v.file <- args[3]
+  c.file <- args[1]
+  v.file <- args[2]
   
   # To run manually - specify files
-  c.file = "codefix_log_20140301_20140331.txt"
-  v.file = "visit_log_20140301_20140331.txt"
+#   c.file = "codefix_log_20140401_20140430.txt"
+#   v.file = "visit_log_20140401_20140430.txt"
   
   # Reading data
   codeFix_log <- fread(c.file, header = TRUE, sep = "\t", na.strings=c("NA", ''), colClasses="character") 
@@ -67,20 +66,11 @@ require(lubridate)
                                             Referer, ignore.case=T, invert=T), 
                                        list(AccessDateTime, CUSTCD, SessionId, URL, Referer, SERIES_CODE)]
 
-
-# Experimental zone -------------------------------------------------------
-
-  visit_log.bak <- visit_log
-  codeFix_log.bak <- codeFix_log
-
-  visit_log <- visit_log.bak
-  codeFix_log <- codeFix_log.bak
-
+  # Removing Misumi referer URLs
   codeFix_log <- codeFix_log[grep("^https?://us.misumi-ec.com/|^https?://www.misumiusa.com|^https?://www.misumi-ec.com", 
                                           Referer, ignore.case=T, invert=T)]
 
 #  ------------------------------------------------------------------------
-
 
   # Removing blank/NA referers and/or SessionId
   visit_log <- visit_log[ !(is.na(Referer) | is.na(SessionId)) ]
@@ -89,7 +79,8 @@ require(lubridate)
   # Splitting data for Category and Product page based on the initial URL access
   visit_log_cat  <- visit_log[grep("vona2/mech", URL, ignore.case=T)]
   visit_log_prod <- visit_log[grep("vona2/detail", URL, ignore.case=T)]
-
+  
+  # Setting key for faster performance
   setkey(codeFix_log   , SessionId)
   setkey(visit_log_cat , SessionId)
   setkey(visit_log_prod, SessionId)
@@ -102,14 +93,20 @@ require(lubridate)
 
   result_table <- data.table( total_queries_cat  = nrow(visit_log_cat), 
                               total_queries_prod = nrow(visit_log_prod), 
-                              total_codefix_cat = nrow(visit_codeFix_cat), 
+                              total_codefix_cat  = nrow(visit_codeFix_cat), 
                               total_codefix_prod = nrow(visit_codeFix_prod) )
   
+  # rounding results to 3 decimal points
   result_table <- result_table[, `:=` ( cat_conversion  = round(total_codefix_cat/total_queries_cat, 3), 
                                         prod_conversion = round(total_codefix_prod/total_queries_prod, 3)
                                        )]
 
-  analysis_file = paste0("P:/Data_Analysis/Analysis_Results/15_cat_prod_starting_visits", "_", "March", ".csv" )
+  # Get current month name
+  library(lubridate)
+  curr_month = as.character(month(Sys.Date(), label=TRUE))
+  
+  # making file name
+  analysis_file = paste0("P:/Data_Analysis/Analysis_Results/15_cat_prod_starting_visits", "_", curr_month, ".csv" )
   
   # Exporting results to csv
   write.csv(result_table, file = analysis_file, na = '', row.names = FALSE)
