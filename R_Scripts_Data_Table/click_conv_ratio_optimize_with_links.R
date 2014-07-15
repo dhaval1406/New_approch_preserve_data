@@ -40,7 +40,8 @@ results_dir <- "P:/Data_Analysis/Analysis_Results/shiny_data/"
 results_dir_q <- "Q:/marketingshared/Web Reports/Data_Analysis/click_conversion_ratio/"
 
 # Using keyword_category_121113.xls 
-keyword.cat.data <- as.data.table(read.xlsx("keyword_category_022714.xls", sheetIndex=1, stringsAsFactors= F, encoding='UTF-8'))
+# keyword.cat.data <- as.data.table(read.xlsx("keyword_category_022714.xls", sheetIndex=1, stringsAsFactors= F, encoding='UTF-8'))
+keyword.cat.data <- as.data.table(read.xlsx("optimized_keywords_05092014.xlsx", sheetIndex=1, stringsAsFactors= F, encoding='UTF-8'))
 
 ### =====================================================================
 ### Part of Data_Load_Prod mixed with 1_keyword_transition_ratio
