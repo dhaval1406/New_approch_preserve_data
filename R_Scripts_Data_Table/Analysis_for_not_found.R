@@ -1,12 +1,7 @@
-# This Data analysis is similar to Analysis 7 that uses below data from different servers
-# Search_log, codeFix_log  -> web server logs
-# SO data - from SQL server's SO table
+### This is the analysis in which, Paul is more interested to know found and not-found results. 
+### These results are excludes any optimized results.
 
-### Changes compare to previous analysis
-# SEARCH_TYPE == 1 for seach_log
-# CUSTCD is used to match Customer_Code from SO table
-# Logic for from.date and to.date
-# Summarizing on category_2
+
 
 # List the files and removing everything
 rm(list = ls())
@@ -25,12 +20,7 @@ require(xlsx)
 setwd("P:/Data_Analysis/Weblog_Data/")
 
 #Files from 12/01/2013 to 04/30/2014
-fileNames = c(  'search_log_20131201_20140101.txt',
-                'search_log_20140101_20140131.txt',
-                'search_log_20140201_20140228.txt',
-                'search_log_20140301_20140331.txt',
-                'search_log_20140401_20140430.txt'
-              )
+fileNames = c(  'search_log_20140501_20140531.txt' )
  
 #Extract multiple files from an archive with the target weblog directory
 # Not needed this time sine the data are in weblog directory
@@ -92,8 +82,8 @@ search_log_clean_sum <- search_log_clean_sum[!keyword %in% optimized.keywords$ke
 search_log_clean_sum_found <- search_log_clean_sum_found[!keyword %in% optimized.keywords$keyword]
 
 # Exporting results to csv
-write.csv(search_log_clean_sum, file = "P:/Data_Analysis/Analysis_Results/Not_found_kwrds_122013_042014.csv", na = '', row.names = FALSE)
-write.csv(search_log_clean_sum_found, file = "P:/Data_Analysis/Analysis_Results/found_kwrds_122013_042014.csv", na = '', row.names = FALSE)
+write.csv(search_log_clean_sum, file = "P:/Data_Analysis/Analysis_Results/Not_found_kwrds_052014.csv", na = '', row.names = FALSE)
+write.csv(search_log_clean_sum_found, file = "P:/Data_Analysis/Analysis_Results/found_kwrds_052014.csv", na = '', row.names = FALSE)
 
 # Delete files after processing data
 # unlink(c(s.file, c.file))
