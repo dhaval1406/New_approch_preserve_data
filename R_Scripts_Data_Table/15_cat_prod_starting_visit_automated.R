@@ -13,6 +13,8 @@
 ###     - URL with `vona2/detail` referes Product Page    
 ###     - URL with `vona2/mech` referes to Category Page
 ###    
+### Example to run from command prompt:
+###     cmd /k cd /d p:\Data_Analysis\Weblog_Data && RTerm --vanilla --args codefix_log_20140501_20140531.txt visit_log_20140501_20140531.txt May < P:/R/New_approch_preserve_data/R_Scripts_Data_Table/15_cat_prod_starting_visit_automated.R
 ### ==============================================================================================
 
 # List the files and removing everything
@@ -36,10 +38,12 @@ require(lubridate)
   
   c.file <- args[1]
   v.file <- args[2]
+  curr_month <- args[3]
   
   # To run manually - specify files
-#   c.file = "codefix_log_20140401_20140430.txt"
-#   v.file = "visit_log_20140401_20140430.txt"
+#   c.file = "codefix_log_20140601_20140630.txt"
+#   v.file = "visit_log_20140601_20140630.txt"
+#   curr_month = "May"
   
   # Reading data
   codeFix_log <- fread(c.file, header = TRUE, sep = "\t", na.strings=c("NA", ''), colClasses="character") 
@@ -54,8 +58,8 @@ require(lubridate)
 
   # removing blank keywords and convert  keywords to lower case and 
   # removing internal acccounts with CUSTCD = "WOSMUS"
-  codeFix_log <- codeFix_log [!(CUSTCD == "WOSMUS")]
-  visit_log <- visit_log [!(CUSTCD == "WOSMUS") ]
+  visit_log   <- visit_log   [grep("WOSMUS", CUSTCD, invert=T)]
+  codeFix_log <- codeFix_log [grep("WOSMUS", CUSTCD, invert=T)]
   
   # Convert AccessDatetime to date format and select data from 09/01/2013 to 02/28/2014
   visit_log$AccessDateTime   <- as.Date(visit_log$AccessDateTime)
@@ -102,8 +106,8 @@ require(lubridate)
                                        )]
 
   # Get current month name
-  library(lubridate)
-  curr_month = as.character(month(Sys.Date(), label=TRUE))
+#   library(lubridate)
+#   curr_month = as.character(month(Sys.Date(), label=TRUE))
   
   # making file name
   analysis_file = paste0("P:/Data_Analysis/Analysis_Results/15_cat_prod_starting_visits", "_", curr_month, ".csv" )
