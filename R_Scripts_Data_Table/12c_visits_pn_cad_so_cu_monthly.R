@@ -19,6 +19,7 @@ begTime <- Sys.time()
 require(data.table)
 require(RODBC)
 require(bit64)
+require(lubridate)
 #======================================== web log part ===================================================
 
   # Connect to SQL servers ODBC connction
@@ -30,28 +31,33 @@ require(bit64)
   # Getting file names from command line arguments
   args <- commandArgs(trailingOnly = TRUE)
   
-  # s.file <- args[1]
-  # c.file <- args[2]
-  # cad.file <- args[3]
+  # c.file     <- args[1]
+  # cad.file   <- args[2]
+  # v.file     <- args[3]
+  # curr_month <- args[4]
   
   # To run manually - specify files
-  # s.file = "search_log_20130901_20140228.txt"
-  c.file = "codefix_log_20130901_20140228.txt"
-  cad.file = "caddownload_log_20130901_20140228.txt"
-  v.file = "visit_log_20130501_20140301.txt"
-  
-  #Extract a specific files from an archive with the target weblog directory
-  # system(paste0("7z x -y P:/Data_Analysis/Archive/archive_2013.7z ", s.file, " -o", getwd()))
-  # system(paste0("7z x -y P:/Data_Analysis/Archive/archive_2013.7z ", c.file, " -o", getwd()))
-  
+  c.file = "codefix_log_20140501_20140531.txt"
+  cad.file = "caddownload_log_20140501_20140531.txt"
+  v.file = "visit_log_20140501_20140531.txt"
+  curr_month = "May"
+
+  #
+  # Figure out the date logic to split the result for each month
+  #
+#   from_dates <- c('2014-05-01', '2014-06-01')
+#   to_dates <- c('2014-06-01', '2014-07-01')
+
+  from_dates <- c('2014-05-01')
+  to_dates <- c('2014-06-01')
+
+
   #Importing data
-  # search_log <- fread(s.file, header = TRUE, sep = "\t", na.strings=c("NA", '')) 
   codeFix_log <- fread(c.file, header = TRUE, sep = "\t", na.strings=c("NA", '')) 
   cadFile_log <- fread(cad.file, header = TRUE, sep = "\t", na.strings=c("NA", '')) 
   visit_log <- fread(v.file, header = TRUE, sep = "\t", na.strings=c("NA", ''), colClasses="character") 
   
   cu <- sqlQuery(misumi_sql, "select CUSTOMER_CODE, ACOLL_CUSTOMER_CODE,  CUSTOMER_NAME from CU ")
-  # cu.1 <- sqlQuery(misumi_sql, "select * from CU WHERE ACOLL_CUSTOMER_CODE='062843'")
   
   cu <- data.table(cu, key=c("CUSTOMER_CODE"))
   setnames (cu, "CUSTOMER_CODE", "CUSTCD")  
@@ -62,14 +68,12 @@ require(bit64)
   
   # removing blank keywords and convert  keywords to lower case and 
   # removing internal acccounts with CUSTCD = "WOSMUS"
-  # search_log <- search_log[!is.na(Q) & ( !(CUSTCD == "WOSMUS") | (is.na(CUSTCD)) ) & (SEARCH_TYPE == 1) ] [, Q := tolower(Q)]
-  codeFix_log <- codeFix_log [!(CUSTCD == "WOSMUS")]
-  cadFile_log <- cadFile_log [!(CUSTCD == "WOSMUS")]
-  visit_log <- visit_log [!(CUSTCD == "WOSMUS") ]
+  visit_log   <- visit_log   [grep("WOSMUS", CUSTCD, invert=T)]
+  codeFix_log <- codeFix_log [grep("WOSMUS", CUSTCD, invert=T)]
+  cadFile_log <- cadFile_log [grep("WOSMUS", CUSTCD, invert=T)]
   
   # Convert AccessDatetime to date format and select data from 09/01/2013 to 02/28/2014
   visit_log$AccessDateTime <- as.Date(visit_log$AccessDateTime)
-  visit_logFromSept <- visit_log[AccessDateTime >='2013-09-01' & AccessDateTime <='2014-02-28']
   
   # Formatting Series_Code - fread assigns it to class 'integer64'
   codeFix_log$SERIES_CODE = as.character(codeFix_log$SERIES_CODE)
@@ -79,12 +83,6 @@ require(bit64)
   codeFix_log <- unique(codeFix_log)
   cadFile_log <- unique(cadFile_log)
   
-  #
-  # Figure out the date logic to split the result for each month
-  #
-  from_dates <- c('2013-09-01', '2013-10-01', '2013-11-01', '2013-12-01', '2014-01-01', '2014-02-01')
-  to_dates <- c('2013-10-01', '2013-11-01', '2013-12-01', '2014-01-01', '2014-02-01', '2014-03-01')
-
   # Producing monthly results
   for(i in 1:length(from_dates)){
   
@@ -105,7 +103,8 @@ require(bit64)
       
       # Format date
       from.date = as.Date(from_dates[i])
-      to.date  = as.Date(to_dates[i]) + 30
+      # Download data for extra 30 days since it take about up to a month for someone to buy a product after downloading a CAD
+      to.date  = as.Date(to_dates[i]) + 30 
     
       # Get data from SQL server that are greater or equal to from date
       # Also remove samples with Product_Total_Amount > 0.00
@@ -154,9 +153,9 @@ require(bit64)
       # Assign total product sales to the result table
       result_table$total_product_sales <- sum(cad_codeFix_so_merge$Product_Total_Amount)
       result_table$total_sales_orders <- nrow(so_data)
-      result_table$total_site_visits <- nrow(visit_logFromSept[AccessDateTime >= from_dates[i] & AccessDateTime < to_dates[i]])
+      result_table$total_site_visits <- nrow(visit_log[AccessDateTime >= from_dates[i] & AccessDateTime < to_dates[i]])
     
-      analysis_file = paste0("P:/Data_Analysis/Analysis_Results/12c_visits_partnum_cad_so_tot_prod", "_", month(from_dates[i], label=TRUE), ".csv" )
+      analysis_file = paste0("P:/Data_Analysis/Analysis_Results/12c_visits_partnum_cad_so_tot_prod", "_", curr_month, ".csv" )
       
       # Exporting results to csv
       write.csv(result_table, file = analysis_file, na = '', row.names = FALSE)

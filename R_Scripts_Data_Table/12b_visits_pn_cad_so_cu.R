@@ -32,9 +32,9 @@ args <- commandArgs(trailingOnly = TRUE)
 # cad.file <- args[3]
 
 # To run manually - specify files
-# s.file = "search_log_20130901_20140228.txt"
-c.file = "codefix_log_20130901_20140228.txt"
-cad.file = "caddownload_log_20130901_20140228.txt"
+# s.file = "search_log_20140301_20140331.txt"
+c.file = "codefix_log_20140301_20140331.txt"
+cad.file = "caddownload_log_20140301_20140331.txt"
 v.file = "visit_log_20130501_20140301.txt"
 
 #Extract a specific files from an archive with the target weblog directory
