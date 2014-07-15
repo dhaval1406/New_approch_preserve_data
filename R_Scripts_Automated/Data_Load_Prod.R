@@ -52,32 +52,17 @@ detailTab_log <- subset(detailTab_log, subset = (!(CUSTCD == "WOSMUS") | (is.na(
 # Normalizing keywords by stemming, currently only stemming plurals e.g. words that end with `s`
 search_log$Q <- gsub("(.+[^s])s$", "\\1", search_log$Q)
 
-### summarize total keyword searches - search_log[1:100,]
+# summarize total keyword searches - search_log[1:100,]
 total_keyword_search <- ddply(search_log, .(Q), summarise, 
                               sum_link = sum(Status=='Link'), 
                               sum_linkCtg = sum(Status=='LinkCtg'), 
                               total_search = sum (sum(Status=='NotFound'), (Status=='Hit')))
 
-# total_codefix <- ddply(codeFix_log, .(SessionId, Referer), summarise, 
-#                        #codefix_count = sum(Referer != ''), 
-#                        #codefix_count = length(unique(c(SessionId)))
-#                        codefix_count = length(unique(Referer))
-# 					            )
-# 
-# # for Analysis # 3	
-# total_codefix_anl3 <- ddply(codeFix_log, .(SessionId, Referer, SERIES_CODE), summarise, 
-#             					 codefix_count = length(unique(PRODUCT_CODE))
-#                       )
-# 		
-
+# summarize total tab counts
 total_detailtab<- ddply(detailTab_log, .(SessionId, SERIES_CODE), summarise, 
                        #codefix_count = length(unique(c(SessionId)))x
                        tab_count = length(unique(Tab_Name)))
 		
-# Merge total_keyword_search with search 
-# keyword_search_merge <- merge(search_log, total_keyword_search, all.x=TRUE, by="Q", sort=FALSE)
-# codefix_merge <- merge(codeFix_log, total_codefix, all.x=TRUE, by=c("SessionId", "Referer"), sort=FALSE)
-
 # Function to format resultant CSV - generated during different analysis
 format_name <- function(x){
   time.stamp = format(Sys.time(), "%m%d%Y")
