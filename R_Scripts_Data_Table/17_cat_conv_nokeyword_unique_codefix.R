@@ -5,7 +5,7 @@
 ### Goal: To analyse the keyword search results before and after optimizations. 
 ### To measure: calculate click and conversion ratio for first round or keyword mappings 
 ###             and compare results before and after optimization for keywords 
-
+###
 ### Its mix of 3 different analysis: 1_keyword_transition_ratio, 3_keyword_webid_partnumber and
 ###                                  4_keyword_category  
 ### 
@@ -25,8 +25,8 @@ begTime <- Sys.time()
 # Getting file names and dates from command line arguments
 args <- commandArgs(trailingOnly = TRUE)
 
-search_log_file <- "search_log_20140601_20140630.txt"
-codefix_log_file <- "codefix_log_20140601_20140630.txt"
+# search_log_file <- "search_log_20140501_20140531.txt"
+# codefix_log_file <- "codefix_log_20140501_20140531.txt"
 
 search_log_file <- args[1]
 codefix_log_file <- args[2]
@@ -44,12 +44,12 @@ require(plyr)
 #Setting directories
 
 # Uncomment below if using Japan's data
-# setwd("P:/Data_Analysis/Weblog_Data/jp_data/")
-# results_dir <- "P:/Data_Analysis/Analysis_Results/jp_results/"
+setwd("P:/Data_Analysis/Weblog_Data/jp_data/")
+results_dir <- "P:/Data_Analysis/Analysis_Results/jp_results/"
 
 # Uncomment below if using USA data
- setwd("P:/Data_Analysis/Weblog_Data/")
- results_dir <- "P:/Data_Analysis/Analysis_Results/"
+# setwd("P:/Data_Analysis/Weblog_Data/")
+# results_dir <- "P:/Data_Analysis/Analysis_Results/"
 
 ### =====================================================================
 ### Part of Data_Load_Prod mixed with 1_keyword_transition_ratio
@@ -77,10 +77,7 @@ codeFix_log <- codeFix_log[ !CUSTCD=="WOSMUS" | is.na(CUSTCD) ] [, CUSTCD := NUL
   # search_log <- search_log[ !CUSTCD == "WOSMUS" ] 
 
 # Formatting Link_URL
-search_log[, `:=` ( SERIES_CODE = as.character(SERIES_CODE), 
-                    Link_URL    = as.character(Link_URL)
-                   )]
-codeFix_log[, SERIES_CODE := as.character(SERIES_CODE)]
+search_log[, `:=` ( Link_URL    = as.character(Link_URL))]
 
 # Exctract (right most) category id from the Link_URL
 search_log$last_cat  <- gsub(".*/(\\w+)/$", "\\1", search_log$Link_URL) 
@@ -110,7 +107,7 @@ keyword_search_merge_anl <- search_log
   total_codefix <- total_codefix [!is.na(Referer)]
 
   # Keep unique records with the fields that we need
-  total_codefix <- unique(total_codefix[, c("SessionId", "Referer","SERIES_CODE"), with=FALSE])
+  total_codefix <- unique(total_codefix[, c("SessionId", "Referer"), with=FALSE])
 
 #==========================================================================================
 # Get unique values before merge
